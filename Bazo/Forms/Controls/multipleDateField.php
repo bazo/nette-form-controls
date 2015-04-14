@@ -1,9 +1,9 @@
 <?php
+
 namespace Bazo\Forms\Controls;
 
+
 use Nette\Utils\Html;
-use Nette\Forms\Controls\TextInput;
-use Nette\Utils\Arrays;
 
 /**
  * multipleDateField
@@ -11,7 +11,7 @@ use Nette\Utils\Arrays;
  * @author Martin Bažík
  * @package Core
  */
-class MultipleDateField extends TextInput
+class MultipleDateField extends MultipleField
 {
 
 	/**
@@ -20,84 +20,54 @@ class MultipleDateField extends TextInput
 	 */
 	public function getControl()
 	{
-		//DOROBIT TY KOKOT LENIVY, keby som tak vedel, ze co
-		$fromControl = Html::el('input')->class('datepicker')->autocomplete('on');
-		$fromControl->name = $this->getHtmlName() . '[from]';
-		$fromControl->disabled = $this->disabled;
-		$fromControl->id = $this->getHtmlId() . '-from';
-		if (isset($this->value['from']))
-		{
-			$from = $this->value['from'];
-			if ($from instanceof \DateTime)
-			{
-				$fromControl->value($this->value['from']->format('d.m.Y'));
-			}
-			else
-			{
-				$fromControl->value($this->value['from']);
-			}
-		}
+		$fromControl = $this->getControlPart('from');
+		$toControl	 = $this->getControlPart('to');
 
-		$toControl = Html::el('input')->class('datepicker')->autocomplete('on');
-		$toControl->name = $this->getHtmlName() . '[to]';
-		$toControl->disabled = $this->disabled;
-		$toControl->id = $this->getHtmlId() . '-to';
-		if (isset($this->value['to']))
-		{
-			$to = $this->value['to'];
-			if ($to instanceof \DateTime)
-			{
-				$toControl->value($this->value['to']->format('d.m.Y'));
-			}
-			else
-			{
-				$toControl->value($this->value['to']);
-			}
-		}
-
-		$control = Html::el('span')->add($fromControl)->add($toControl)->class('range-input');
-		$control->disabled = $this->disabled;
+		$control			 = Html::el('span')->add($fromControl)->add($toControl)->class('range-input');
+		$control->disabled	 = $this->disabled;
 		return $control;
 	}
 
-	/**
-	 * Sets control's value.
-	 * @param  string
-	 * @return TextBase  provides a fluent interface
-	 */
-	public function setValue($value)
+
+	public function getControlPart($part)
 	{
-		$this->value = \is_array($value) ? $value : array('from' => null, 'to' => null);
-		return $this;
+		$partControl			 = Html::el('input')->class('datepicker')->autocomplete('on');
+		$partControl->name		 = $this->getHtmlName() . '[' . $part . ']';
+		$partControl->disabled	 = $this->disabled;
+		$partControl->id		 = $this->getHtmlId() . '-' . $part;
+		if (isset($this->value[$part])) {
+			$from = $this->value[$part];
+			if ($from instanceof \DateTime) {
+				$partControl->value($this->value[$part]->format('d.m.Y'));
+			} else {
+				$partControl->value($this->value[$part]);
+			}
+		}
+
+		return $partControl;
 	}
 
-	/**
-	 * Returns control's value.
-	 * @return string
-	 */
-	public function getValue()
-	{
-		return $this->value;
-	}
 
 	/**
 	 * Loads HTTP data.
 	 * @return void
 	 */
-	public function loadHttpData()
-	{
-		$path = \explode('[', \strtr(\str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
+	/*
+	  public function loadHttpData()
+	  {
+	  $path = \explode('[', \strtr(\str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
 
-		$origValue = Arrays::get($this->getForm()->getHttpData(), $path);
+	  $origValue = Arrays::get($this->getForm()->getHttpData(), $path);
 
-		$from = isset($origValue['from']) ? $origValue['from'] : '';
-		$to = isset($origValue['to']) ? $origValue['to'] : '';
-		$value = array(
-			'from' => $from,
-			'to' => $to
-		);
-//		/var_dump($value);exit;
-		$this->setValue($value);
-	}
-
+	  $from = isset($origValue['from']) ? $origValue['from'] : '';
+	  $to = isset($origValue['to']) ? $origValue['to'] : '';
+	  $value = array(
+	  'from' => $from,
+	  'to' => $to
+	  );
+	  //		/var_dump($value);exit;
+	  $this->setValue($value);
+	  }
+	 *
+	 */
 }

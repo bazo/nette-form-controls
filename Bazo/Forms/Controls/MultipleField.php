@@ -1,8 +1,13 @@
 <?php
+
 namespace Bazo\Forms\Controls;
+
+
 use Nette\Utils\Html;
 use Nette\Forms\Controls\TextInput;
 use Nette\Utils\Arrays;
+use Nette\Application\UI\Form;
+
 /**
  * multipleDateField
  *
@@ -18,23 +23,28 @@ class MultipleField extends TextInput
 	 */
 	public function getControl()
 	{
-		$fromControl = Html::el('input')->autocomplete('on');
-		$fromControl->name = $this->getHtmlName().'[from]';
-		$fromControl->disabled = $this->disabled;
-		$fromControl->id = $this->getHtmlId().'-from';
-		if(isset($this->value['from'])) $fromControl->value($this->value['from']);
+		$fromControl = $this->getControlPart('from');
+		$toControl	 = $this->getControlPart('to');
 
-		$toControl = Html::el('input')->autocomplete('on');
-		$toControl->name = $this->getHtmlName().'[to]';
-		$toControl->disabled = $this->disabled;
-		$toControl->id = $this->getHtmlId().'-to';
-		if(isset($this->value['to'])) $toControl->value($this->value['to']);
-
-
-		$control = Html::el('span')->add($fromControl)->add($toControl)->class('range-input');
-		$control->disabled = $this->disabled;
+		$control			 = Html::el('span')->add($fromControl)->add($toControl)->class('range-input');
+		$control->disabled	 = $this->disabled;
 		return $control;
 	}
+
+
+	public function getControlPart($part)
+	{
+		$partControl			 = Html::el('input')->autocomplete('on');
+		$partControl->name		 = $this->getHtmlName() . '[' . $part . ']';
+		$partControl->disabled	 = $this->disabled;
+		$partControl->id		 = $this->getHtmlId() . '-' . $part;
+		if (isset($this->value[$part])) {
+			$partControl->value($this->value[$part]);
+		}
+
+		return $partControl;
+	}
+
 
 	/**
 	 * Sets control's value.
@@ -43,9 +53,10 @@ class MultipleField extends TextInput
 	 */
 	public function setValue($value)
 	{
-            $this->value = \is_array($value) ? $value : array('from' => null, 'to' => null);
-            return $this;
+		$this->value = \is_array($value) ? $value : ['from' => NULL, 'to' => NULL];
+		return $this;
 	}
+
 
 	/**
 	 * Returns control's value.
@@ -56,22 +67,16 @@ class MultipleField extends TextInput
 		return $this->value;
 	}
 
-        /**
-	 * Loads HTTP data.
-	 * @return void
-	 */
+
 	public function loadHttpData()
 	{
-		$path = \explode('[', \strtr(\str_replace(array('[]', ']'), '', $this->getHtmlName()), '.', '_'));
-		
-		$origValue = Arrays::get($this->getForm()->getHttpData(), $path);
-		
-		$from = isset($origValue['from']) ? $origValue['from'] : '';
-		$to = isset($origValue['to']) ? $origValue['to'] : '';
-		$value = array(
-			'from' => $from,
-			'to' => $to
+		$data	 = $this->getHttpData(Form::DATA_TEXT, '[]');
+		$value	 = array(
+			'from'	 => $data[0],
+			'to'	 => $data[1]
 		);
 		$this->setValue($value);
 	}
+
+
 }
